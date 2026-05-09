@@ -1,0 +1,47 @@
+services:
+  # Backend API Service
+  - type: web
+    name: ad-agency-api
+    env: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STABILITY_API_KEY
+        sync: false
+      - key: CLIENT_URL
+        fromService:
+          type: web
+          name: ad-agency-frontend
+          property: host
+
+  # Frontend Static Site
+  - type: web
+    name: ad-agency-frontend
+    env: static
+    region: singapore
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: ad-agency-api
+          property: host
