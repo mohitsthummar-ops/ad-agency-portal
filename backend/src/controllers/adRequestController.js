@@ -189,6 +189,40 @@ blurry, distorted text, unreadable fonts, low quality, messy layout, watermark, 
             }
         }
 
+        // 🎯 3. Fallback: Stability AI (Using your STABILITY_API_KEY)
+        if (!backgroundBuffer && process.env.STABILITY_API_KEY) {
+            try {
+                console.log(`[Ad Gen] Attempting Stability AI...`);
+                const formData = new FormData();
+                formData.append('prompt', finalPrompt);
+                formData.append('output_format', 'webp');
+
+                const response = await axios.post(
+                    "https://api.stability.ai/v2beta/stable-image/generate/core",
+                    formData,
+                    {
+                        validateStatus: () => true,
+                        responseType: "arraybuffer",
+                        headers: {
+                            "Authorization": `Bearer ${process.env.STABILITY_API_KEY.trim()}`,
+                            "Accept": "image/*",
+                            ...formData.getHeaders()
+                        },
+                        timeout: 50000
+                    }
+                );
+
+                if (response.status === 200) {
+                    backgroundBuffer = Buffer.from(response.data);
+                    console.log(`[Ad Gen] Success with Stability AI!`);
+                } else {
+                    console.error(`[Ad Gen] Stability AI Failed with status ${response.status}`);
+                }
+            } catch (e) {
+                console.error(`[Ad Gen] Stability AI Exception:`, e.message);
+            }
+        }
+
         // 🎯 3. Final Fallback: Pollinations AI (Free)
         if (!backgroundBuffer) {
             try {
