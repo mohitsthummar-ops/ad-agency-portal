@@ -143,74 +143,68 @@ blurry, distorted text, unreadable fonts, low quality, messy layout, watermark, 
         console.log(`[Ad Gen] Exact Prompt used:\n${finalPrompt}`);
         console.log(`[Ad Gen] Attempting to generate image using FLUX...`);
 
-        // 2. Generate Image
-        try {
-            console.log(`[Ad Gen] Checking API Keys... NVIDIA: ${!!process.env.NVIDIA_API_KEY}, TOGETHER: ${!!process.env.TOGETHER_API_KEY}`);
-
-            // Priority 1: NVIDIA NIM if API key is present
-            if (process.env.NVIDIA_API_KEY) {
-                console.log(`[Ad Gen] Using NVIDIA NIM...`);
+        // 🎯 1. Priority: NVIDIA NIM
+        if (!backgroundBuffer && process.env.NVIDIA_API_KEY) {
+            try {
+                console.log(`[Ad Gen] Attempting NVIDIA NIM...`);
                 const response = await axios.post("https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell", {
                     text_prompts: [{ text: finalPrompt }],
                     seed: seed
                 }, {
                     headers: {
                         "Authorization": `Bearer ${process.env.NVIDIA_API_KEY.trim()}`,
-                        "Accept": "application/json",
-                        "Content-Type": "application/json"
+                        "Accept": "application/json", "Content-Type": "application/json"
                     },
-                    timeout: 50000
+                    timeout: 40000
                 });
 
-                if (response.data && response.data.artifacts && response.data.artifacts[0] && response.data.artifacts[0].base64) {
+                if (response.data?.artifacts?.[0]?.base64) {
                     backgroundBuffer = Buffer.from(response.data.artifacts[0].base64, 'base64');
-                    console.log(`[Ad Gen] Successfully generated image with NVIDIA NIM.`);
-                } else {
-                    console.warn(`[Ad Gen] NVIDIA API unexpected response format.`);
+                    console.log(`[Ad Gen] Success with NVIDIA!`);
                 }
-            } else if (process.env.TOGETHER_API_KEY) {
-                // Priority 2: Together AI if API key is present
-                console.log(`[Ad Gen] Using Together AI...`);
+            } catch (e) {
+                console.error(`[Ad Gen] NVIDIA Failed:`, e.response?.data?.detail || e.message);
+            }
+        }
+
+        // 🎯 2. Fallback: Together AI
+        if (!backgroundBuffer && process.env.TOGETHER_API_KEY) {
+            try {
+                console.log(`[Ad Gen] Attempting Together AI...`);
                 const response = await axios.post("https://api.together.xyz/v1/images/generations", {
                     model: "black-forest-labs/FLUX.1-schnell",
-                    prompt: finalPrompt,
-                    width: styleInfo.width,
-                    height: styleInfo.height,
-                    steps: 28,
-                    n: 1,
-                    response_format: "b64_json"
+                    prompt: finalPrompt, width: styleInfo.width, height: styleInfo.height,
+                    steps: 28, n: 1, response_format: "b64_json"
                 }, {
-                    headers: {
-                        "Authorization": `Bearer ${process.env.TOGETHER_API_KEY}`,
-                        "Content-Type": "application/json"
-                    },
-                    timeout: 60000
+                    headers: { "Authorization": `Bearer ${process.env.TOGETHER_API_KEY.trim()}` },
+                    timeout: 40000
                 });
 
-                if (response.data && response.data.data && response.data.data[0] && response.data.data[0].b64_json) {
+                if (response.data?.data?.[0]?.b64_json) {
                     backgroundBuffer = Buffer.from(response.data.data[0].b64_json, 'base64');
-                    console.log(`[Ad Gen] Successfully generated image with Together AI.`);
-                } else {
-                    console.warn(`[Ad Gen] Together API unexpected response format.`);
+                    console.log(`[Ad Gen] Success with Together AI!`);
                 }
+            } catch (e) {
+                console.error(`[Ad Gen] Together AI Failed:`, e.message);
             }
+        }
 
-            // Priority 3: Fallback to Pollinations AI (Free FLUX)
-            if (!backgroundBuffer) {
-                console.log(`[Ad Gen] Fallback to Pollinations AI...`);
-                // Shorten prompt for Pollinations reliability
-                const simplifiedPrompt = `Commercial product advertisement for ${brand}, ${title}, ${offer}, ultra high quality, clean text, professional lighting, 8k resolution`;
-                const encodedPrompt = encodeURIComponent(simplifiedPrompt);
-                const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${styleInfo.width}&height=${styleInfo.height}&seed=${seed}&nologo=true&model=flux`;
+        // 🎯 3. Final Fallback: Pollinations AI (Free)
+        if (!backgroundBuffer) {
+            try {
+                console.log(`[Ad Gen] Falling back to Pollinations (Free)...`);
+                const simplifiedPrompt = `Professional advertisement for ${brand}, ${title}, ${offer}, 8k, modern design`;
+                const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(simplifiedPrompt)}?width=${styleInfo.width}&height=${styleInfo.height}&seed=${seed}&nologo=true&model=flux`;
 
                 const response = await fetch(pollinationsUrl);
                 if (response.ok) {
                     const arrBuf = await response.arrayBuffer();
                     backgroundBuffer = Buffer.from(arrBuf);
+                    console.log(`[Ad Gen] Success with Pollinations!`);
                 }
+            } catch (e) {
+                console.error(`[Ad Gen] Pollinations Failed:`, e.message);
             }
-        } catch (e) {
-            console.error(`[Ad Gen] Image generation error:`, e.response?.data || e.message);
         }
 
         // Final Fallback: Descriptive Placeholder
