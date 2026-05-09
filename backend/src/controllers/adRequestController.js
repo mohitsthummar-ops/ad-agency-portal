@@ -76,7 +76,7 @@ exports.generateAIImage = async (req, res, next) => {
         let styleKeywords = 'Modern, minimal, elegant (not cluttered)';
         const lowerDesc = description.toLowerCase();
         const lowerBrand = brand.toLowerCase();
-        
+
         if (lowerDesc.includes('food') || lowerDesc.includes('burger') || lowerDesc.includes('pizza') || lowerBrand.includes('bakery') || lowerBrand.includes('cafe')) {
             styleKeywords = 'delicious food photography, warm lighting, restaurant ad poster, modern, clean';
         } else if (lowerDesc.includes('fashion') || lowerDesc.includes('clothing') || lowerDesc.includes('wear') || lowerBrand.includes('boutique')) {
@@ -145,19 +145,21 @@ blurry, distorted text, unreadable fonts, low quality, messy layout, watermark, 
 
         // 2. Generate Image
         try {
+            console.log(`[Ad Gen] Checking API Keys... NVIDIA: ${!!process.env.NVIDIA_API_KEY}, TOGETHER: ${!!process.env.TOGETHER_API_KEY}`);
+
             // Priority 1: NVIDIA NIM if API key is present
             if (process.env.NVIDIA_API_KEY) {
-                console.log(`[Ad Gen] Using NVIDIA NIM (FLUX.1-schnell)...`);
+                console.log(`[Ad Gen] Using NVIDIA NIM...`);
                 const response = await axios.post("https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell", {
                     text_prompts: [{ text: finalPrompt }],
                     seed: seed
                 }, {
                     headers: {
-                        "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
+                        "Authorization": `Bearer ${process.env.NVIDIA_API_KEY.trim()}`,
                         "Accept": "application/json",
                         "Content-Type": "application/json"
                     },
-                    timeout: 60000
+                    timeout: 50000
                 });
 
                 if (response.data && response.data.artifacts && response.data.artifacts[0] && response.data.artifacts[0].base64) {
@@ -192,21 +194,19 @@ blurry, distorted text, unreadable fonts, low quality, messy layout, watermark, 
                     console.warn(`[Ad Gen] Together API unexpected response format.`);
                 }
             }
-            
+
             // Priority 3: Fallback to Pollinations AI (Free FLUX)
             if (!backgroundBuffer) {
-                console.log(`[Ad Gen] Using Pollinations AI (FLUX) fallback...`);
-                // Use built-in fetch for pollination as it returns an arrayBuffer
-                const encodedPrompt = encodeURIComponent(finalPrompt.substring(0, 1500)); // Pollinations limit
+                console.log(`[Ad Gen] Fallback to Pollinations AI...`);
+                // Shorten prompt for Pollinations reliability
+                const simplifiedPrompt = `Commercial product advertisement for ${brand}, ${title}, ${offer}, ultra high quality, clean text, professional lighting, 8k resolution`;
+                const encodedPrompt = encodeURIComponent(simplifiedPrompt);
                 const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${styleInfo.width}&height=${styleInfo.height}&seed=${seed}&nologo=true&model=flux`;
-                
-                const response = await fetch(pollinationsUrl, { signal: AbortSignal.timeout(45000) });
+
+                const response = await fetch(pollinationsUrl);
                 if (response.ok) {
                     const arrBuf = await response.arrayBuffer();
                     backgroundBuffer = Buffer.from(arrBuf);
-                    console.log(`[Ad Gen] Successfully generated image with Pollinations AI.`);
-                } else {
-                    console.warn(`[Ad Gen] Pollinations API Error: ${response.statusText}`);
                 }
             }
         } catch (e) {
@@ -293,9 +293,9 @@ exports.proxyDownload = async (req, res, next) => {
 
         const buffer = await response.arrayBuffer();
         const contentType = response.headers.get('content-type') || 'image/jpeg';
-        
+
         const finalFilename = filename || `ad_download_${Date.now()}.jpg`;
-        
+
         res.set({
             'Content-Type': contentType,
             'Content-Disposition': `attachment; filename="${finalFilename}"`,
