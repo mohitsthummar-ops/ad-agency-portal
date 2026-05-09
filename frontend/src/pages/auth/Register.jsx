@@ -142,27 +142,8 @@ export default function Register() {
                             {errors.confirmPassword && <p className="text-red-500 text-xs mt-1 font-medium">{errors.confirmPassword.message}</p>}
                         </div>
 
-                        {/* Role Selection */}
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                            <label className={`cursor-pointer rounded-xl border p-4 flex flex-col items-center gap-2 transition-all ${watchRole === 'client'
-                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500/20'
-                                : 'border-slate-200 bg-slate-50 hover:border-blue-300'
-                                }`}>
-                                <input {...register('role')} type="radio" value="client" className="hidden" />
-                                <Building2 className={`w-6 h-6 ${watchRole === 'client' ? 'text-blue-600' : 'text-slate-400'}`} />
-                                <span className={`text-sm font-bold ${watchRole === 'client' ? 'text-blue-700' : 'text-slate-600'}`}>Client</span>
-                            </label>
-
-                            <label className={`cursor-pointer rounded-xl border p-4 flex flex-col items-center gap-2 transition-all ${watchRole === 'admin'
-                                ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-500/20'
-                                : 'border-slate-200 bg-slate-50 hover:border-amber-300'
-                                }`}>
-                                <input {...register('role')} type="radio" value="admin" className="hidden" />
-                                <Shield className={`w-6 h-6 ${watchRole === 'admin' ? 'text-amber-600' : 'text-slate-400'}`} />
-                                <span className={`text-sm font-bold ${watchRole === 'admin' ? 'text-amber-700' : 'text-slate-600'}`}>Admin</span>
-                            </label>
-                        </div>
-                        {errors.role && <p className="text-red-500 text-xs mt-1 font-medium">{errors.role.message}</p>}
+                        {/* Hidden role field defaults to client */}
+                        <input {...register('role')} type="hidden" value="client" />
 
                         <button
                             type="submit"

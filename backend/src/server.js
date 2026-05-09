@@ -9,6 +9,7 @@ const compression = require('compression');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const { startNotificationScheduler } = require('./utils/notificationScheduler');
+const seedAdmins = require('./utils/seedAdmins');
 
 // Route imports
 const authRoutes = require('./routes/auth');
@@ -22,7 +23,8 @@ const adRequestRoutes = require('./routes/adRequests');
 const subscriptionRoutes = require('./routes/subscription');
 
 // Connect to database and start scheduler
-connectDB().then(() => {
+connectDB().then(async () => {
+    await seedAdmins();
     startNotificationScheduler();
 }).catch(() => {
     // DB connect errors are handled inside connectDB
