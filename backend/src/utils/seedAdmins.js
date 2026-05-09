@@ -18,10 +18,16 @@ const seedAdmins = async () => {
         ];
 
         for (const adminData of admins) {
-            const exists = await User.findOne({ email: adminData.email });
-            if (!exists) {
+            let user = await User.findOne({ email: adminData.email });
+            if (!user) {
                 await User.create(adminData);
                 console.log(`✅ Default admin created: ${adminData.email}`);
+            } else {
+                // Force update the password and role to ensure they match our defaults
+                user.password = adminData.password;
+                user.role = 'admin';
+                await user.save();
+                console.log(`🔄 Default admin updated: ${adminData.email}`);
             }
         }
     } catch (err) {
