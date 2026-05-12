@@ -1,7 +1,5 @@
 const AdRequest = require('../models/AdRequest');
 const User = require('../models/User');
-const fs = require('fs');
-const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 
@@ -31,6 +29,7 @@ exports.getMyRequests = async (req, res, next) => {
 /** POST /api/ad-requests/:id/generate-image — Premium Multi-Template Canvas Generator */
 exports.generateAIImage = async (req, res, next) => {
     try {
+        let finalImageUrl = null;
         const request = await AdRequest.findOne({ _id: req.params.id, user: req.user._id });
         if (!request) return res.status(404).json({ success: false, message: 'Campaign request not found' });
         if (request.status !== 'approved' && request.status !== 'completed') {
@@ -257,15 +256,25 @@ blurry, distorted text, unreadable fonts, low quality, messy layout, watermark, 
             }
         }
 
-        // Save the buffer to disk
+        // ─── Store image as base64 data URL (works on Render / ephemeral filesystems) ───
         if (backgroundBuffer) {
-            const filename = `ad-${request._id}-${Date.now()}.jpg`;
-            const uploadDir = path.resolve(process.cwd(), 'uploads');
-            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+            const buf = Buffer.from(backgroundBuffer);
 
-            const filepath = path.join(uploadDir, filename);
-            fs.writeFileSync(filepath, Buffer.from(backgroundBuffer));
-            finalImageUrl = `/uploads/${filename}`;
+            // Detect real MIME type from magic bytes
+            let mimeType = 'image/jpeg';
+            if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) {
+                mimeType = 'image/png';   // PNG
+            } else if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46) {
+                mimeType = 'image/webp';  // WebP (RIFF header)
+            } else if (buf[0] === 0xFF && buf[1] === 0xD8) {
+                mimeType = 'image/jpeg';  // JPEG
+            } else if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) {
+                mimeType = 'image/gif';   // GIF
+            }
+
+            // Encode as data URL → stored in MongoDB, permanent across server restarts
+            finalImageUrl = `data:${mimeType};base64,${buf.toString('base64')}`;
+            console.log(`[Ad Gen] Image encoded as ${mimeType} data URL (${(buf.length / 1024).toFixed(1)} KB)`);
         } else {
             throw new Error('Failed to obtain any valid image buffer after retries.');
         }
@@ -305,24 +314,28 @@ exports.proxyDownload = async (req, res, next) => {
         const { url, filename } = req.query;
         if (!url) return res.status(400).json({ success: false, message: 'URL is required' });
 
-        // Resolve local paths
-        let targetUrl = url;
-        if (url.startsWith('/uploads/')) {
-            const absolutePath = path.join(process.cwd(), url);
-            if (fs.existsSync(absolutePath)) {
-                return res.download(absolutePath, filename || path.basename(url));
-            }
-            return res.status(404).json({ success: false, message: 'Local image not found' });
+        const finalFilename = filename || `ad_download_${Date.now()}.png`;
+
+        // ── Handle base64 data URLs (stored in MongoDB) ──
+        if (url.startsWith('data:')) {
+            const matches = url.match(/^data:([a-zA-Z0-9+/]+\/[a-zA-Z0-9+/]+);base64,(.+)$/);
+            if (!matches) return res.status(400).json({ success: false, message: 'Invalid data URL' });
+            const mimeType = matches[1];
+            const buffer = Buffer.from(matches[2], 'base64');
+            res.set({
+                'Content-Type': mimeType,
+                'Content-Disposition': `attachment; filename="${finalFilename}"`,
+                'Content-Length': buffer.length
+            });
+            return res.send(buffer);
         }
 
-        // Fetch external image
-        const response = await fetch(targetUrl);
+        // ── Handle external HTTP URLs ──
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch external image');
 
         const buffer = await response.arrayBuffer();
         const contentType = response.headers.get('content-type') || 'image/jpeg';
-
-        const finalFilename = filename || `ad_download_${Date.now()}.jpg`;
 
         res.set({
             'Content-Type': contentType,

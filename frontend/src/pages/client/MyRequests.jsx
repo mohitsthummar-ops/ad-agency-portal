@@ -17,13 +17,12 @@ const STATUS_CONFIG = {
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
 
-// Helper to get full image URL to bypass proxy issues for direct <img src> tags
+// Helper to get full image URL — data: URLs are self-contained and must NOT be prefixed
 const getFullImageUrl = (url) => {
     if (!url) return null;
+    if (url.startsWith('data:')) return url;   // base64 data URL — use as-is
     if (url.startsWith('http')) return url;
-    if (url.startsWith('data:')) return url;
-    // For local /uploads/ paths, ensure they are prefixed with the backend URL
-    // This allows the browser to find them even if the Vite proxy is picky
+    // For legacy /uploads/ paths, prefix with backend URL
     const baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
     return url.startsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
 };
@@ -71,8 +70,20 @@ function GeneratedImageModal({ imageUrl, title, onClose }) {
 
     const handleDownload = async () => {
         if (!imageUrl) return;
+        const filename = `${title.replace(/\s+/g, '_')}_ad.png`;
         try {
-            const filename = `${title.replace(/\s+/g, '_')}_ad.jpg`;
+            // ── Fast path: data URLs can be downloaded directly in the browser ──
+            if (imageUrl.startsWith('data:')) {
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                toast.success('Download complete!');
+                return;
+            }
+            // ── Proxy path for external/legacy URLs ──
             const response = await api.get('/ad-requests/download', {
                 params: { url: imageUrl, filename },
                 responseType: 'blob',
@@ -121,7 +132,7 @@ function GeneratedImageModal({ imageUrl, title, onClose }) {
                             <AlertTriangle className="w-8 h-8 text-amber-500 mb-2" />
                             <p className="text-sm text-slate-700 font-medium">Image generation service is temporarily unavailable</p>
                             <p className="text-xs text-slate-500 mt-1">Please try again later. The AI servers might be overloaded.</p>
-                            <button 
+                            <button
                                 onClick={() => { setRetryCount(0); setImgLoading(true); setImgError(false); }}
                                 className="mt-4 text-xs text-blue-600 font-semibold hover:underline"
                             >
@@ -250,9 +261,9 @@ export default function MyRequests() {
         { id: 'rejected', label: 'Rejected' },
     ];
 
-    const filtered = activeTab === 'all' 
-        ? requests 
-        : activeTab === 'approved' 
+    const filtered = activeTab === 'all'
+        ? requests
+        : activeTab === 'approved'
             ? requests.filter(r => r.status === 'approved' || r.status === 'completed')
             : requests.filter(r => r.status === activeTab);
     const isSubActive = subscription?.status === 'Active';
@@ -292,9 +303,9 @@ export default function MyRequests() {
                     >
                         {tab.label}
                         <span className="ml-1.5 text-xs opacity-70">
-                            {tab.id === 'all' 
-                                ? requests.length 
-                                : tab.id === 'approved' 
+                            {tab.id === 'all'
+                                ? requests.length
+                                : tab.id === 'approved'
                                     ? requests.filter(r => r.status === 'approved' || r.status === 'completed').length
                                     : requests.filter(r => r.status === tab.id).length}
                         </span>

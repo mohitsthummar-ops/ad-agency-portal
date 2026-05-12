@@ -29,28 +29,33 @@ function ImagePreviewModal({ request, onClose }) {
 
     const handleDownload = async () => {
         if (!request.generatedImageUrl) return;
-        if (imgError) {
-            toast.error("Cannot download a broken image.");
-            return;
-        }
+        if (imgError) { toast.error("Cannot download a broken image."); return; }
+        const filename = `${request.title.replace(/\s+/g, '_')}_ad.png`;
         try {
-            // Check if it's an SVG data URI
+            // ── Fast path: base64 data URL — download directly ──
+            if (request.generatedImageUrl.startsWith('data:')) {
+                const link = document.createElement('a');
+                link.href = request.generatedImageUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                toast.success('Download completed!');
+                return;
+            }
+            // ── SVG data URI path ──
             if (request.generatedImageUrl.startsWith('data:image/svg+xml')) {
                 const img = new Image();
                 img.crossOrigin = "anonymous";
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = 1080;
-                    canvas.height = 1080;
+                    canvas.width = 1080; canvas.height = 1080;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
-
                     const url = canvas.toDataURL('image/png');
                     const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `${request.title.replace(/\s+/g, '_')}_ad.png`;
-                    document.body.appendChild(link);
-                    link.click();
+                    link.href = url; link.download = filename;
+                    document.body.appendChild(link); link.click();
                     document.body.removeChild(link);
                     toast.success('Download completed!');
                 };
@@ -58,16 +63,14 @@ function ImagePreviewModal({ request, onClose }) {
                 img.src = request.generatedImageUrl;
                 return;
             }
-
+            // ── External HTTP URL path ──
             const response = await fetch(request.generatedImageUrl);
             if (!response.ok) throw new Error('Image server error');
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = url;
-            link.download = `${request.title.replace(/\s+/g, '_')}_ad.jpg`;
-            document.body.appendChild(link);
-            link.click();
+            link.href = url; link.download = filename;
+            document.body.appendChild(link); link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
             toast.success('Download completed!');

@@ -38,7 +38,7 @@ app.use(
         contentSecurityPolicy: {
             directives: {
                 ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-                "img-src": ["'self'", "data:", "https://image.pollinations.ai", "https://*.pollinations.ai"],
+                "img-src": ["'self'", "data:", "blob:", "https://image.pollinations.ai", "https://*.pollinations.ai", "https://*.render.com"],
             },
         },
         crossOriginResourcePolicy: { policy: "cross-origin" },
