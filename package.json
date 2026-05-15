@@ -1,9 +1,13 @@
 {
   "name": "ad-agency-portal-root",
   "private": true,
+  "devDependencies": {
+    "vite": "^7.3.1",
+    "tailwindcss": "^4.2.0"
+  },
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "install": "cd frontend && npm install",
-    "start": "cd backend && npm start"
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
+    "install": "npm install --prefix frontend",
+    "start": "npm start --prefix backend"
   }
 }
