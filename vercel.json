@@ -1,0 +1,19 @@
+{
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://ad-agency-api.onrender.com/api/$1"
+    },
+    {
+      "source": "/uploads/(.*)",
+      "destination": "https://ad-agency-api.onrender.com/uploads/$1"
+    },
+    {
+      "source": "/((?!api|uploads|assets|logo.jpg|vite.svg).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
