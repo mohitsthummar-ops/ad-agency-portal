@@ -68,8 +68,10 @@ exports.getPackages = async (req, res, next) => {
     try {
         await seedDefaultPlans();
         const plans = await SubscriptionPlan.find({ isActive: true }).sort('sortOrder');
+        console.log(`[Subscription] Found ${plans.length} active plans in database.`);
         res.json({ success: true, packages: plans });
     } catch (err) {
+        console.error('[Subscription] Error fetching packages:', err.message);
         next(err);
     }
 };
@@ -85,6 +87,7 @@ exports.getMy = async (req, res, next) => {
         // Auto-expire if past expiry date
         if (user.subscription?.status === 'Active' && user.subscription?.expiryDate) {
             if (new Date() > new Date(user.subscription.expiryDate)) {
+                console.log(`[Subscription] Plan expired for user ${user._id}`);
                 user.subscription.status = 'Expired';
                 await user.save();
             }
@@ -134,6 +137,7 @@ exports.buyPackage = async (req, res, next) => {
         };
 
         await user.save();
+        console.log(`[Subscription] User ${user._id} purchased package: ${pkg.label}`);
         res.json({ success: true, message: `${pkg.label} activated successfully!`, subscription: user.subscription });
     } catch (err) {
         next(err);

@@ -25,9 +25,10 @@ export default function MySubscription() {
                 subscriptionAPI.getMy(),
                 subscriptionAPI.getPackages()
             ]);
-            setSubscription(subRes.data.subscription);
-            setPackages(pkgRes.data.packages);
-        } catch {
+            setSubscription(subRes.data.subscription || null);
+            setPackages(pkgRes.data.packages || []);
+        } catch (err) {
+            console.error('Subscription load error:', err);
             toast.error('Failed to load subscription info');
         } finally {
             setLoading(false);

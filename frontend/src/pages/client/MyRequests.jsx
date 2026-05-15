@@ -5,7 +5,7 @@ import {
     AlertTriangle, Loader2, Eye, Package
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { adRequestAPI, subscriptionAPI } from '../../services/api';
+import { adRequestAPI, subscriptionAPI, getFullImageUrl } from '../../services/api';
 import api from '../../services/api';
 
 const STATUS_CONFIG = {
@@ -13,20 +13,6 @@ const STATUS_CONFIG = {
     approved: { label: 'Approved', color: 'bg-blue-100 text-blue-700', icon: CheckCircle2 },
     completed: { label: 'Completed', color: 'bg-green-100 text-green-700', icon: Sparkles },
     rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700', icon: XCircle },
-};
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
-
-const getFullImageUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('data:')) return url;   // base64 data URL — use as-is
-    if (url.startsWith('http')) return url;
-    // For legacy /uploads/ paths, prefix with backend URL
-    let baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
-    if (baseUrl.endsWith('/api')) {
-        baseUrl = baseUrl.slice(0, -4);
-    }
-    return url.startsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
 };
 
 // Allow both Canvas base64 images, file-based /uploads/ images, and direct HTTPS AI urls
@@ -202,18 +188,16 @@ export default function MyRequests() {
             if (reqRes.status === 'fulfilled') {
                 const newRequests = reqRes.value.data.requests || [];
                 setRequests(prev => {
-                    // Merge: keep locally-generated image URLs if the server hasn't saved one yet
-                    const prevMap = Object.fromEntries(prev.map(r => [r._id, r]));
+                    const prevMap = Object.fromEntries((prev || []).map(r => [r._id, r]));
                     return newRequests.map(r => {
                         const prevR = prevMap[r._id];
                         const serverUrl = isCanvasImage(r.generatedImageUrl) ? r.generatedImageUrl : null;
-                        // Prefer the fresher server URL; fall back to locally cached during generation
                         const localUrl = prevR?.generatedImageUrl || null;
                         return { ...r, generatedImageUrl: serverUrl || localUrl };
                     });
                 });
             }
-            if (subRes.status === 'fulfilled') setSubscription(subRes.value.data.subscription);
+            if (subRes.status === 'fulfilled') setSubscription(subRes.value.data?.subscription || null);
         } catch {
             if (!silent) toast.error('Failed to load requests');
         } finally {
