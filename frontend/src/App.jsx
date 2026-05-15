@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import useAuthStore from './store/authStore';
 import useCrossTabLogout from './hooks/useCrossTabLogout';
+import ErrorBoundary from './ErrorBoundary';
+
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
@@ -74,7 +76,11 @@ function App() {
           },
         }}
       />
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
+
+
+
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
@@ -118,8 +124,10 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </ErrorBoundary>
     </>
   );
 }
+
 
 export default App;
