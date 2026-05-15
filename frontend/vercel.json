@@ -12,7 +12,7 @@
       "destination": "https://ad-agency-api.onrender.com/uploads/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api|uploads|assets|logo.jpg|vite.svg).*)",
       "destination": "/index.html"
     }
   ]
