@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    LayoutDashboard, User, CreditCard, Menu, X, Zap, LogOut, Bell,
+    LayoutDashboard, User, CreditCard, Menu, X, LogOut, Bell,
     Megaphone, ClipboardList, Package, Receipt, LayoutTemplate
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
@@ -56,10 +56,12 @@ export default function ClientLayout() {
                 {/* Brand */}
                 <div className="flex items-center justify-between p-5 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/20">
-                            <Zap className="w-4 h-4 text-white" />
-                        </div>
-                        <span className="font-bold text-blue-900 text-lg tracking-tight">AdAgency</span>
+                        <img
+                            src="/logo.jpg"
+                            alt="Ads Agency Logo"
+                            className="h-9 w-auto object-contain"
+                        />
+                        <span style={{ fontFamily: "'Playfair Display', serif" }} className="font-bold text-slate-800 text-lg tracking-tight">Ads Agency</span>
                     </div>
                     <button className="md:hidden text-slate-400 hover:text-slate-600" onClick={() => setSidebarOpen(false)}>
                         <X className="w-5 h-5" />

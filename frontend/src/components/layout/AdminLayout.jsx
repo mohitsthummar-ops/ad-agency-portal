@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, Users, Megaphone, Tag, BarChart3,
-    Settings, Menu, X, Zap, LogOut, Shield, Bell, ClipboardList
+    Settings, Menu, X, LogOut, Shield, Bell, ClipboardList
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
@@ -54,12 +54,14 @@ export default function AdminLayout() {
                 {/* Brand */}
                 <div className="flex items-center justify-between p-5 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/20">
-                            <Shield className="w-4 h-4 text-white" />
-                        </div>
+                        <img
+                            src="/logo.jpg"
+                            alt="Ads Agency Logo"
+                            className="h-9 w-auto object-contain"
+                        />
                         <div>
-                            <span className="font-bold text-blue-900 text-sm">Admin Panel</span>
-                            <p className="text-[10px] text-slate-500 font-medium tracking-wide">AdAgency Platform</p>
+                            <span style={{ fontFamily: "'Playfair Display', serif" }} className="font-bold text-slate-800 text-sm">Admin Panel</span>
+                            <p className="text-[10px] text-slate-500 font-medium tracking-wide">Ads Agency Platform</p>
                         </div>
                     </div>
                     <button className="md:hidden text-slate-400 hover:text-white" onClick={() => setSidebarOpen(false)}>

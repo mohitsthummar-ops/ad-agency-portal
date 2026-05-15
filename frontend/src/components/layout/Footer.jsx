@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Zap, Twitter, Linkedin, Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react';
+import { Twitter, Linkedin, Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react';
 
 const footerLinks = {
     Company: [
@@ -32,10 +32,12 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="md:col-span-1">
                         <Link to="/" className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center">
-                                <Zap className="w-4 h-4 text-white" />
-                            </div>
-                            <span className="font-bold text-lg gradient-text">AdAgency</span>
+                            <img
+                                src="/logo.jpg"
+                                alt="Ads Agency Logo"
+                                className="h-10 w-auto object-contain brightness-0 invert"
+                            />
+                            <span style={{ fontFamily: "'Playfair Display', serif" }} className="font-bold text-lg gradient-text">Ads Agency</span>
                         </Link>
                         <p className="text-slate-500 text-sm leading-relaxed mb-5">
                             A modern platform to manage, track, and grow your advertisement campaigns with precision.
@@ -95,7 +97,7 @@ export default function Footer() {
 
                 <div className="mt-12 pt-6 border-t border-[rgba(99,102,241,0.1)] flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-slate-600 text-sm">
-                        © {new Date().getFullYear()} AdAgency Portal. All rights reserved.
+                        © {new Date().getFullYear()} Ads Agency. All rights reserved.
                     </p>
                     <p className="text-slate-600 text-sm">
                         Built with ❤️ using the MERN Stack

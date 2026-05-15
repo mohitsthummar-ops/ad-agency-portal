@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Zap, LogIn, UserPlus, LayoutDashboard, Shield } from 'lucide-react';
+import { Menu, X, LogIn, UserPlus, LayoutDashboard, Shield } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 
 const navLinks = [
@@ -37,10 +37,12 @@ export default function Header() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2 group">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:shadow-lg transition-all">
-                            <Zap className="w-4 h-4 text-white" />
-                        </div>
-                        <span className="font-bold text-xl text-blue-900 tracking-tight">AdAgency</span>
+                        <img
+                            src="/logo.jpg"
+                            alt="Ads Agency Logo"
+                            className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+                        />
+                        <span style={{ fontFamily: "'Playfair Display', serif" }} className="font-bold text-xl text-slate-800 tracking-tight group-hover:text-blue-700 transition-colors">Ads Agency</span>
                     </Link>
 
                     {/* Desktop Nav */}
