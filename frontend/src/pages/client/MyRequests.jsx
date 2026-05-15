@@ -17,13 +17,15 @@ const STATUS_CONFIG = {
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
 
-// Helper to get full image URL — data: URLs are self-contained and must NOT be prefixed
 const getFullImageUrl = (url) => {
     if (!url) return null;
     if (url.startsWith('data:')) return url;   // base64 data URL — use as-is
     if (url.startsWith('http')) return url;
     // For legacy /uploads/ paths, prefix with backend URL
-    const baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+    let baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+    if (baseUrl.endsWith('/api')) {
+        baseUrl = baseUrl.slice(0, -4);
+    }
     return url.startsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
 };
 

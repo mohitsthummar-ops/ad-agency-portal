@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bookmark, Trash2, ExternalLink, Eye, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { userAPI } from '../../services/api';
+import { userAPI, getFullImageUrl } from '../../services/api';
 
 export default function SavedAds() {
     const [ads, setAds] = useState([]);
@@ -79,7 +79,7 @@ export default function SavedAds() {
                             >
                                 <div className="aspect-video bg-slate-100 overflow-hidden relative">
                                     {ad.image ? (
-                                        <img src={ad.image.startsWith('http') ? ad.image : `/uploads/${ad.image}`}
+                                        <img src={getFullImageUrl(ad.image)}
                                             alt={ad.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">

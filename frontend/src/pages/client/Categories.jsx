@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Monitor, ShoppingBag, GraduationCap, Plane, Utensils, Heart, Dumbbell, Film, Package } from 'lucide-react';
-import { adAPI, categoryAPI } from '../../services/api';
+import { adAPI, categoryAPI, getFullImageUrl } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const ICON_MAP = {
@@ -95,7 +95,7 @@ export default function Categories() {
                                 <Link key={ad._id} to={`/dashboard/ads/${ad._id}`} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group hover:-translate-y-1">
                                     <div className="aspect-video bg-slate-100 overflow-hidden flex items-center justify-center border-b border-slate-100">
                                         {ad.image ? (
-                                            <img src={ad.image.startsWith('http') ? ad.image : `/uploads/${ad.image}`}
+                                            <img src={getFullImageUrl(ad.image)}
                                                 alt={ad.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                         ) : (
                                             <span className="text-slate-400 text-sm font-medium">No Image</span>

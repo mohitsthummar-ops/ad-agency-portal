@@ -39,6 +39,19 @@ api.interceptors.response.use(
 
 export default api;
 
+export const getFullImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('data:')) return url;
+    if (url.startsWith('http')) return url;
+    const API_URL = import.meta.env.VITE_API_URL || '/api';
+    let baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+    if (baseUrl.endsWith('/api')) {
+        baseUrl = baseUrl.slice(0, -4);
+    }
+    // If it's a relative URL to uploads but without /uploads/ prefix
+    const path = url.startsWith('/') ? url : `/uploads/${url}`;
+    return `${baseUrl}${path}`;
+};
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export const authAPI = {
     register: (data) => api.post('/auth/register', data),

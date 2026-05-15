@@ -45,10 +45,23 @@ app.use(
     })
 );
 
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+    'http://localhost:5173',
+    'https://ad-agency-portal.vercel.app',
+    'https://ad-agency-frontend.onrender.com'
+].filter(Boolean);
+
 // CORS
 app.use(
     cors({
-        origin: process.env.CLIENT_URL || 'http://localhost:5173',
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
     })
 );

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink, Bookmark, Eye, ArrowLeft, Tag, Monitor, MousePointerClick, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { adAPI, userAPI } from '../../services/api';
+import { adAPI, userAPI, getFullImageUrl } from '../../services/api';
 
 export default function AdDetails() {
     const { id } = useParams();
@@ -76,7 +76,7 @@ export default function AdDetails() {
                     <div className="aspect-video bg-slate-900 overflow-hidden">
                         {ad.image ? (
                             <img
-                                src={ad.image.startsWith('http') ? ad.image : `/uploads/${ad.image}`}
+                                src={getFullImageUrl(ad.image)}
                                 alt={ad.title}
                                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                             />

@@ -13,6 +13,19 @@ const STATUS_CONFIG = {
     rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700', icon: XCircle },
 };
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
+
+const getFullImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('data:')) return url;
+    if (url.startsWith('http')) return url;
+    let baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+    if (baseUrl.endsWith('/api')) {
+        baseUrl = baseUrl.slice(0, -4);
+    }
+    return url.startsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
+};
+
 function StatusBadge({ status }) {
     const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
     const Icon = cfg.icon;
@@ -108,7 +121,7 @@ function ImagePreviewModal({ request, onClose }) {
                                 </div>
                             )}
                             <img
-                                src={request.generatedImageUrl}
+                                src={getFullImageUrl(request.generatedImageUrl)}
                                 alt="Generated Ad"
                                 onLoad={() => setImgLoading(false)}
                                 onError={() => { setImgLoading(false); setImgError(true); }}
@@ -238,7 +251,7 @@ function DetailModal({ request, onClose, onApprove, onReject }) {
                                     </div>
                                 )}
                                 <img
-                                    src={request.generatedImageUrl}
+                                    src={getFullImageUrl(request.generatedImageUrl)}
                                     alt="Generated"
                                     onLoad={() => setImgLoading(false)}
                                     onError={() => { setImgLoading(false); setImgError(true); }}
