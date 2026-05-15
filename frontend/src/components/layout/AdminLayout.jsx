@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, Users, Megaphone, Tag, BarChart3,
-    Settings, Menu, X, LogOut, Shield, Bell, ClipboardList
+    Settings, Menu, X, LogOut, Shield, Bell, ClipboardList, Zap
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
