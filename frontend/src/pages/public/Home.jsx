@@ -20,10 +20,10 @@ const categories = [
 ];
 
 const stats = [
-    { icon: Users, value: '5,000+', label: 'Active Clients' },
-    { icon: TrendingUp, value: '50K+', label: 'Campaigns Run' },
+    { icon: Users, value: '50+', label: 'Active Clients' },
+    { icon: TrendingUp, value: '100+', label: 'Campaigns Run' },
     { icon: Star, value: '4.9★', label: 'Avg. Rating' },
-    { icon: BarChart3, value: '₹2Cr+', label: 'Revenue Generated' },
+    { icon: BarChart3, value: '10k+', label: 'Revenue Generated' },
 ];
 
 const fadeUp = {
