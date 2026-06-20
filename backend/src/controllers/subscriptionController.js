@@ -107,6 +107,10 @@ exports.buyPackage = async (req, res, next) => {
         await seedDefaultPlans();
         const { packageId } = req.body;
 
+        if (!packageId || typeof packageId !== 'string') {
+            return res.status(400).json({ success: false, message: 'Invalid or missing package ID' });
+        }
+
         // packageId can be plan _id or key
         const pkg = await SubscriptionPlan.findOne({
             $or: [{ _id: packageId.length === 24 ? packageId : null }, { key: packageId }],

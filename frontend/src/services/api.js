@@ -151,7 +151,7 @@ export const adRequestAPI = {
 export const subscriptionAPI = {
     getPackages: () => api.get('/subscription/packages'),
     getMy: () => api.get('/subscription/me'),
-    buyPackage: (data) => api.post('/subscription/buy', data),
+    buy: (packageId) => api.post('/subscription/buy', { packageId }),
 };
 
 
